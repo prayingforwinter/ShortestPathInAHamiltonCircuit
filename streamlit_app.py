@@ -27,3 +27,6 @@ if st.button("Generate Graph"):
         st.pyplot(fig)
     else:
         st.error("No Hamiltonian Path Found.")
+
+if __name__ == "__main__":
+    st.title("My Streamlit App")
