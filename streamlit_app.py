@@ -1,7 +1,7 @@
 import streamlit as st
 from streamlit_drawable_canvas import st_canvas
 import networkx as nx
-from hamilton_logic import find_hamiltonian_path, visualize_path
+from hamilton import find_hamiltonian_path, visualize_path
 import matplotlib.pyplot as plt
 
 # Streamlit Configuration
