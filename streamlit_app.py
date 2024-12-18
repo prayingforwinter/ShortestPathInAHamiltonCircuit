@@ -1,71 +1,51 @@
 import streamlit as st
-from streamlit_drawable_canvas import st_canvas
 import networkx as nx
-from hamilton import find_hamiltonian_path, visualize_path
+import random
 import matplotlib.pyplot as plt
+from hamilton import find_hamiltonian_path, visualize_path
 
-# Streamlit Configuration
+# Streamlit UI
 st.title("Hamiltonian Circuit Finder")
-st.write("Add nodes by clicking on the canvas. Drag between nodes to add edges with weights.")
+st.write("Generate a random graph and find the Hamiltonian Circuit.")
 
-# Initialize Graph
-if "graph" not in st.session_state:
-    st.session_state.graph = nx.Graph()
+# Slider for Number of Nodes
+num_nodes = st.slider("Select Number of Nodes:", min_value=3, max_value=20, value=5)
 
-graph = st.session_state.graph
+# Generate Random Graph Button
+if st.button("Generate Random Graph"):
+    # Initialize the graph
+    st.session_state.graph = nx.complete_graph(num_nodes)  # Ensures a connected graph
 
-# Canvas Setup
-canvas_result = st_canvas(
-    fill_color="rgba(255, 165, 0, 0.3)",  
-    stroke_width=3,
-    stroke_color="black",
-    background_color="#fff",
-    update_streamlit=True,
-    height=500,
-    width=700,
-    drawing_mode="freedraw",
-    key="hamilton_canvas",
-)
+    # Add random weights to edges
+    for u, v in st.session_state.graph.edges():
+        weight = random.randint(1, 20)
+        st.session_state.graph[u][v]['weight'] = weight
 
-# User Interaction Section
-st.subheader("Add Node and Edges")
-node_id = st.text_input("Node ID to Add:")
-connect_nodes = st.text_input("Connect Nodes (comma-separated):")
-edge_weight = st.number_input("Edge Weight:", min_value=1, value=1)
+    st.success(f"Generated a graph with {num_nodes} nodes and random edge weights!")
 
-if st.button("Add Node"):
-    graph.add_node(node_id)
-    st.success(f"Added Node: {node_id}")
+# Display Graph
+if "graph" in st.session_state:
+    graph = st.session_state.graph
 
-if st.button("Add Edge"):
-    try:
-        u, v = map(str.strip, connect_nodes.split(","))
-        graph.add_edge(u, v, weight=edge_weight)
-        st.success(f"Connected Node {u} to {v} with Weight {edge_weight}")
-    except ValueError:
-        st.error("Please input two nodes separated by a comma.")
-
-# Visualize Graph
-st.subheader("Graph Visualization")
-if st.button("Show Graph"):
-    pos = nx.spring_layout(graph)
+    st.subheader("Generated Graph:")
+    pos = nx.spring_layout(graph, seed=42)  # Layout for consistent positioning
     plt.figure(figsize=(8, 6))
-    nx.draw(graph, pos, with_labels=True, node_color="lightblue", node_size=500)
+    nx.draw(graph, pos, with_labels=True, node_color="lightblue", node_size=500, font_size=10)
+
+    # Display edge weights
     edge_labels = nx.get_edge_attributes(graph, 'weight')
     nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels)
     st.pyplot(plt)
 
-# Find Hamiltonian Circuit
-st.subheader("Find Hamiltonian Circuit")
-start_node = st.text_input("Enter Start Node:", value="0")
-if st.button("Find Circuit"):
-    if start_node in graph.nodes:
+    # Hamiltonian Circuit Finder
+    st.subheader("Find Hamiltonian Circuit")
+    start_node = st.number_input("Select Start Node:", min_value=0, max_value=num_nodes-1, value=0, step=1)
+    
+    if st.button("Find Hamiltonian Circuit"):
         path, weight = find_hamiltonian_path(graph, start_node)
         if path:
-            st.success(f"Hamiltonian Circuit Found: {path} with Weight {weight}")
+            st.success(f"Hamiltonian Circuit: {path} with Minimum Weight: {weight}")
             visualize_path(graph, path, "Hamiltonian Circuit")
             st.pyplot(plt)
         else:
-            st.error("No Hamiltonian Circuit Found")
-    else:
-        st.error("Start Node does not exist in the graph.")
+            st.error("No Hamiltonian Circuit Found!")
