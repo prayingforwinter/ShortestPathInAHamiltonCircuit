@@ -1,18 +1,6 @@
-# hamilton.py
 import itertools
 import networkx as nx
 import matplotlib.pyplot as plt
-import random
-
-def generate_graph(num_nodes):
-    G = nx.Graph()
-    G.add_nodes_from(range(num_nodes))
-    for i in range(num_nodes):
-        for j in range(i + 1, num_nodes):
-            if random.random() < 0.4:  # Adjust density
-                weight = random.randint(1, 10)
-                G.add_edge(i, j, weight=weight)
-    return G
 
 def find_hamiltonian_path(graph, start_node):
     nodes = list(graph.nodes)
@@ -52,3 +40,22 @@ def visualize_path(graph, path, title):
 
     plt.title(title)
     plt.show()
+
+def check_hamiltonian_path_iterative(graph, path):
+    for i in range(len(path) - 1):
+        if not graph.has_edge(path[i], path[i + 1]):
+            return False
+    return True
+
+def check_hamiltonian_path_recursive(graph, path, index=0):
+    if index == len(path) - 1:
+        return True
+    if not graph.has_edge(path[index], path[index + 1]):
+        return False
+    return check_hamiltonian_path_recursive(graph, path, index + 1)
+
+def add_node(graph, node):
+    graph.add_node(node)
+
+def add_edge(graph, u, v, weight):
+    graph.add_edge(u, v, weight=weight)

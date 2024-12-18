@@ -1,32 +1,45 @@
-# app.py
 import streamlit as st
-from hamilton import generate_graph, find_hamiltonian_path, visualize_path
 import networkx as nx
-import matplotlib.pyplot as plt
+from hamilton import find_hamiltonian_path, visualize_path, add_node, add_edge
 
-st.title("Hamiltonian Path Finder")
+def main():
+    st.title("Hamiltonian Circuit Finder")
 
-# Graph Parameters
-num_nodes = st.slider("Number of Nodes", min_value=5, max_value=50, value=10)
-start_node = st.number_input("Start Node", min_value=0, max_value=num_nodes - 1, value=0)
+    # Create a graph
+    G = nx.Graph()
+    num_nodes = st.slider("Number of Nodes", min_value=3, max_value=10, value=5)
+    edges = [(i, (i + 1) % num_nodes, 1) for i in range(num_nodes)]
 
-# Generate and Visualize Graph
-if st.button("Generate Graph"):
-    graph = generate_graph(num_nodes)
-    st.write(f"Graph with {num_nodes} nodes generated.")
-    fig, ax = plt.subplots()
-    nx.draw(graph, with_labels=True, node_color='lightblue', node_size=500, ax=ax)
-    st.pyplot(fig)
+    for u, v, weight in edges:
+        add_edge(G, u, v, weight)
 
-    # Find Hamiltonian Path
-    best_path, min_weight = find_hamiltonian_path(graph, start_node)
-    if best_path:
-        st.success(f"Hamiltonian Path: {best_path} with weight {min_weight}")
-        fig, ax = plt.subplots()
-        visualize_path(graph, best_path, f"Best Path (Weight: {min_weight})")
-        st.pyplot(fig)
-    else:
-        st.error("No Hamiltonian Path Found.")
+    # Interactive node addition
+    new_node = st.text_input("Add Node (integer):")
+    connect_to = st.text_input("Connect To Node (comma-separated integers):")
+    weight = st.number_input("Weight of New Edges", min_value=1, value=1)
+
+    if st.button("Add Node and Edges"):
+        try:
+            new_node = int(new_node)
+            connections = list(map(int, connect_to.split(",")))
+            add_node(G, new_node)
+            for neighbor in connections:
+                add_edge(G, new_node, neighbor, weight)
+            st.success(f"Added Node {new_node} and connected to {connections} with weight {weight}")
+        except Exception as e:
+            st.error(f"Error: {e}")
+
+    # Start node for Hamiltonian Circuit
+    start_node = st.number_input("Start Node", min_value=0, max_value=num_nodes - 1, value=0)
+
+    if st.button("Find Hamiltonian Circuit"):
+        best_path, min_weight = find_hamiltonian_path(G, start_node)
+        if best_path:
+            st.write(f"Hamiltonian Path: {best_path}")
+            st.write(f"Minimum Weight: {min_weight}")
+            visualize_path(G, best_path, "Hamiltonian Circuit")
+        else:
+            st.write("No Hamiltonian Path Found")
 
 if __name__ == "__main__":
-    st.title("My Streamlit App")
+    main()
