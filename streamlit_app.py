@@ -2,7 +2,7 @@ import streamlit as st
 import networkx as nx
 import random
 import matplotlib.pyplot as plt
-from hamilton_logic import find_hamiltonian_path, visualize_path, compare_runtime
+from hamilton import find_hamiltonian_path_iterative, find_hamiltonian_path_recursive, visualize_path, compare_runtime
 
 # Streamlit UI
 st.title("Hamiltonian Circuit Finder")
