@@ -33,32 +33,31 @@ if "graph" in st.session_state:
     st.pyplot(plt)
 
     # Find Hamiltonian Circuit and Compare Runtime
-    st.subheader("Find Hamiltonian Circuit and Compare Runtime")
-    start_node = st.number_input("Start Node:", min_value=0, max_value=num_nodes - 1, value=0, step=1)
-    
-    if st.button("Find and Compare"):
-        # Hamiltonian Circuit Path
-        path, weight = find_hamiltonian_path(graph, start_node)
-        if path:
-            st.success(f"Hamiltonian Circuit Found: {path} with Total Weight: {weight}")
-            plt.figure(figsize=(10, 8))  # Larger visualization for clarity
-            visualize_path(graph, path, title="Hamiltonian Circuit Path")
-            st.pyplot(plt)
-        else:
-            st.error("No Hamiltonian Circuit Found.")
-        
-        # Runtime Comparison
-        iterative_result, recursive_result, time_diff = compare_runtime(graph, start_node)
+    if st.button("Find Hamiltonian Circuit and Compare Runtime"):
+    # Iterative approach
+    iterative_result = find_hamiltonian_path_iterative(graph, start_node)
+    iterative_path, iterative_weight, iterative_runtime = iterative_result
 
-        st.subheader("Iterative Approach:")
-        st.write(f"Path: {iterative_result[0]}")
-        st.write(f"Weight: {iterative_result[1]}")
-        st.write(f"Runtime: {iterative_result[2]:.4f} seconds")
+    # Recursive approach
+    recursive_result = find_hamiltonian_path_recursive(graph, start_node)
+    recursive_path, recursive_weight, recursive_runtime = recursive_result
 
-        st.subheader("Recursive Approach:")
-        st.write(f"Path: {recursive_result[0]}")
-        st.write(f"Weight: {recursive_result[1]}")
-        st.write(f"Runtime: {recursive_result[2]:.4f} seconds")
+    # Visualize the iterative path (or choose one to display)
+    if iterative_path:
+        plt.figure(figsize=(10, 8))  # Larger visualization for clarity
+        visualize_path(graph, iterative_path, title="Hamiltonian Circuit Path (Iterative)")
+        st.pyplot(plt)
 
-        st.subheader("Time Difference:")
-        st.write(f"{time_diff:.4f} seconds")
+    # Display the results
+    st.subheader("Iterative Approach:")
+    st.write(f"Path: {iterative_path}")
+    st.write(f"Weight: {iterative_weight}")
+    st.write(f"Runtime: {iterative_runtime:.4f} seconds")
+
+    st.subheader("Recursive Approach:")
+    st.write(f"Path: {recursive_path}")
+    st.write(f"Weight: {recursive_weight}")
+    st.write(f"Runtime: {recursive_runtime:.4f} seconds")
+
+    st.subheader("Time Difference:")
+    st.write(f"{abs(iterative_runtime - recursive_runtime):.4f} seconds")
