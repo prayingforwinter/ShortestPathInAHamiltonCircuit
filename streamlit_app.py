@@ -2,7 +2,7 @@ import streamlit as st
 import networkx as nx
 import random
 import matplotlib.pyplot as plt
-from hamilton import find_hamiltonian_path_iterative, find_hamiltonian_path_recursive, visualize_path, compare_runtime
+from hamilton_logic import find_hamiltonian_path, visualize_path, compare_runtime
 
 # Streamlit UI
 st.title("Hamiltonian Circuit Finder")
@@ -32,11 +32,12 @@ if "graph" in st.session_state:
     nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels)
     st.pyplot(plt)
 
-    # Find Hamiltonian Circuit
-    st.subheader("Find Hamiltonian Circuit")
+    # Find Hamiltonian Circuit and Compare Runtime
+    st.subheader("Find Hamiltonian Circuit and Compare Runtime")
     start_node = st.number_input("Start Node:", min_value=0, max_value=num_nodes - 1, value=0, step=1)
     
-    if st.button("Find Hamiltonian Circuit"):
+    if st.button("Find and Compare"):
+        # Hamiltonian Circuit Path
         path, weight = find_hamiltonian_path(graph, start_node)
         if path:
             st.success(f"Hamiltonian Circuit Found: {path} with Total Weight: {weight}")
@@ -45,9 +46,8 @@ if "graph" in st.session_state:
             st.pyplot(plt)
         else:
             st.error("No Hamiltonian Circuit Found.")
-
-    # Compare Iterative and Recursive Runtimes
-    if st.button("Find Hamiltonian Circuit and Compare Runtime"):
+        
+        # Runtime Comparison
         iterative_result, recursive_result, time_diff = compare_runtime(graph, start_node)
 
         st.subheader("Iterative Approach:")
