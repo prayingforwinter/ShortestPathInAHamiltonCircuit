@@ -15,7 +15,7 @@ st.title("Hamiltonian Circuit Finder")
 st.write("Generate a random graph and find the Hamiltonian Circuit using both iterative and recursive approaches.")
 
 # Slider for Number of Nodes
-num_nodes = st.slider("Select Number of Nodes:", min_value=3, max_value=15, value=5)
+num_nodes = st.slider("Select Number of Nodes:", min_value=3, max_value=12, value=5)
 
 # Generate Random Graph Button
 if st.button("Generate Random Graph"):

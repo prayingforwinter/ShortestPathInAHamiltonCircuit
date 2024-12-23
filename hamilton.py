@@ -28,35 +28,50 @@ def find_hamiltonian_path_iterative(graph, start_node):
     return best_path, min_weight, runtime
 
 
+import time
+
 def find_hamiltonian_path_recursive(graph, start_node):
-    """Finds the Hamiltonian Circuit using a recursive approach."""
+    """Finds the Hamiltonian Circuit using a tail-recursive approach."""
+    import time  # Ensure timing is properly accounted for
+
     nodes = list(graph.nodes)
     nodes.remove(start_node)
 
-    def helper(path, remaining_nodes):
+    def tail_recursive_helper(path, remaining_nodes, min_path, min_weight):
+        # Base case: all nodes visited
         if not remaining_nodes:
-            # Check if there's an edge back to the start node
-            if graph.has_edge(path[-1], path[0]):
-                path.append(path[0])  # Form the circuit
+            if graph.has_edge(path[-1], start_node):
+                path.append(start_node)  # Form the circuit
                 weight = sum(graph[path[i]][path[i + 1]]['weight'] for i in range(len(path) - 1))
-                return path, weight
-            return None, float('inf')
+                if weight < min_weight:
+                    return path, weight
+            return min_path, min_weight
 
-        min_path, min_weight = None, float('inf')
-        for next_node in remaining_nodes:
+        # Recursively process each node in remaining_nodes
+        def explore_next(index, current_min_path, current_min_weight):
+            if index == len(remaining_nodes):  # Base case for recursion
+                return current_min_path, current_min_weight
+            
+            next_node = remaining_nodes[index]
             new_path = path + [next_node]
-            sub_path, sub_weight = helper(new_path, [n for n in remaining_nodes if n != next_node])
-            if sub_weight < min_weight:
-                min_path, min_weight = sub_path, sub_weight
+            rest_nodes = remaining_nodes[:index] + remaining_nodes[index + 1:]
 
-        return min_path, min_weight
+            # Explore with the current node
+            updated_path, updated_weight = tail_recursive_helper(new_path, rest_nodes, current_min_path, current_min_weight)
 
-    start_time = time.time()  # Start timing
-    best_path, min_weight = helper([start_node], nodes)
-    end_time = time.time()  # End timing
+            # Continue exploring the remaining nodes
+            return explore_next(index + 1, updated_path, updated_weight)
+
+        # Start the recursive exploration
+        return explore_next(0, min_path, min_weight)
+
+    start_time = time.perf_counter()  # Start timing with high resolution
+    best_path, min_weight = tail_recursive_helper([start_node], nodes, None, float('inf'))
+    end_time = time.perf_counter()  # End timing with high resolution
 
     runtime = end_time - start_time
     return best_path, min_weight, runtime
+
 
 
 def visualize_path(graph, path, title):
@@ -103,3 +118,42 @@ def compare_runtime(graph, start_node):
     print(f"Time Difference (Iterative - Recursive): {time_difference:.4f} seconds")
 
     return (iterative_path, iterative_weight, iterative_time), (recursive_path, recursive_weight, recursive_time), time_difference
+
+def compare_execution_times_live(graph, start_node):
+    """Compares and plots execution times for iterative and recursive Hamiltonian path searches in real-time."""
+    iterative_times = []
+    recursive_times = []
+    node_counts = range(4, len(graph.nodes) + 1)  # Use a subset of nodes for timing comparison
+
+    for n in node_counts:
+        # Generate a complete graph with `n` nodes
+        subgraph = nx.complete_graph(n)
+        for u, v in subgraph.edges:
+            subgraph[u][v]['weight'] = (u + v + 1)  # Assign random weights for simplicity
+
+        # Measure iterative execution time
+        start_time = time.time()
+        _ = find_hamiltonian_path_iterative(subgraph, start_node)
+        end_time = time.time()
+        iterative_times.append(end_time - start_time)
+
+        # Measure recursive execution time
+        start_time = time.time()
+        _ = find_hamiltonian_path_recursive(subgraph, start_node)
+        end_time = time.time()
+        recursive_times.append(end_time - start_time)
+
+        # Update plot in real-time
+        plt.clf()  # Clear previous plot
+        plt.plot(node_counts[:len(iterative_times)], iterative_times, 'r-o', label="Iterative")
+        plt.plot(node_counts[:len(recursive_times)], recursive_times, 'b-o', label="Recursive")
+        plt.title("Real-Time Hamiltonian Path Execution Time Comparison")
+        plt.xlabel("Number of Nodes (n)")
+        plt.ylabel("Execution Time (seconds)")
+        plt.legend()
+        plt.grid(True)
+        plt.pause(0.5)  # Pause to show updates
+
+    plt.show()
+
+    return iterative_times, recursive_times, node_counts
